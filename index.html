@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.7.0</title>
+    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.7.1</title>
     
     <!-- ฟอนต์และไอคอน -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,16 +52,18 @@
         .pin-yellow { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="%23eab308" d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>'); }
         .pin-green { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="%2322c55e" d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>'); }
 
-        /* Custom Hover Tooltip Map */
-        .custom-map-tooltip { 
-            background: rgba(255, 255, 255, 0.95); 
-            border: 1px solid #bae6fd; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
-            border-radius: 8px; 
-            padding: 10px; 
-            pointer-events: auto !important; 
+        /* Custom Popup Map */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid #bae6fd;
+            padding: 0;
         }
-        /* Custom scrollbar for tooltips */
+        .leaflet-popup-content {
+            margin: 10px;
+        }
+        
+        /* Custom scrollbar for popups */
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
@@ -80,7 +82,7 @@
     <!-- Login Screen -->
     <div id="login-screen" class="fixed inset-0 bg-sky-900 z-[100] flex items-center justify-center transition-opacity">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full mx-4 text-center border-t-8 border-sky-500">
-            <!-- อัปเดตโลโก้ รพ. ลงหน้าล็อกอิน -->
+            <!-- โลโก้ รพ. -->
             <div class="w-28 h-28 flex-shrink-0 bg-white rounded-full p-2 shadow-sm border border-sky-100 flex items-center justify-center overflow-hidden mx-auto mb-4">
                 <img src="logo68.jpg" alt="Logo" class="max-w-full max-h-full object-contain" onerror="this.src='https://placehold.co/100x100/e0f2fe/0284c7?text=LOGO'">
             </div>
@@ -100,9 +102,11 @@
     <!-- Header -->
     <header class="bg-white shadow-sm border-b-4 border-sky-500 py-4 px-8 relative z-10">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-6 text-center md:text-left">
+            <!-- Logo -->
             <div class="w-24 h-24 flex-shrink-0 bg-white rounded-full p-1 shadow-md border border-sky-100 flex items-center justify-center overflow-hidden">
                 <img src="logo68.jpg" alt="Logo" class="max-w-full max-h-full object-contain" onerror="this.src='https://placehold.co/100x100/e0f2fe/0284c7?text=LOGO'">
             </div>
+            <!-- Title -->
             <div class="flex flex-col items-center md:items-start">
                 <h1 class="text-3xl md:text-4xl font-bold text-sky-700 mb-2">
                     ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ
@@ -111,7 +115,7 @@
                     <span class="px-3 py-1 bg-sky-100 rounded-full">งานควบคุมโรค</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">กลุ่มงานบริการด้านปฐมภูมิและองค์รวม</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">โรงพยาบาลไชยปราการ</span>
-                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.7.0</span>
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.7.1</span>
                 </div>
             </div>
         </div>
@@ -516,7 +520,7 @@
     <script>
         // URL Google Apps Script 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFTdEr7cOkH0SsKwIFqKG8LUJ6wekDXuDtUSkDXTkRqSRI9c7WR1oS2Yc9A-NWio3HDQ/exec';
-        const storageKey = 'dengue_patients_data_v170'; 
+        const storageKey = 'dengue_patients_data_v171'; 
         
         let patients = JSON.parse(localStorage.getItem(storageKey)) || [];
         const SUBDISTRICTS = ['ปงตำ', 'แม่ทะลบ', 'ศรีดงเย็น', 'หนองบัว'];
@@ -956,7 +960,8 @@
                 });
                 
                 const vNameStr = p.villageName ? ` บ.${p.villageName}` : '';
-                // อัปเดต: เพิ่มวันที่พบผู้ป่วย และใช้เป็น Popup
+                
+                // --- อัปเดต: เปลี่ยน Tooltip เป็น Popup เพื่อให้ Scrollable และไม่หายไป ---
                 const dotPopupHtml = `
                     <div class="font-sans text-left min-w-[180px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">${p.fullName || 'ไม่ระบุชื่อ'}</h4>
@@ -969,8 +974,6 @@
                         </div>
                     </div>
                 `;
-                
-                // ใช้ bindPopup คู่กับ mouseover เพื่อให้กล่องค้างไว้จนกว่าจะไปชี้หมุดอื่น
                 heatDot.bindPopup(dotPopupHtml, { closeButton: true, autoPan: false });
                 heatDot.on('mouseover', function (e) { this.openPopup(); });
                 densityMarkersLayer.addLayer(heatDot);
@@ -1000,11 +1003,11 @@
                     
                 const vNameDisplay = v.villageName ? ` บ.${v.villageName}` : '';
                 
-                // อัปเดต: เปลี่ยนเป็นระบบ Popup เพื่อให้เอาเมาส์เข้าไปเลื่อนดูเคสได้อิสระ
+                // --- อัปเดต: เปลี่ยนเป็น Popup เพื่อให้ค้างไว้และเลื่อน Scroll ได้อิสระ ---
                 const popupHtml = `
                     <div class="font-sans text-left min-w-[220px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">หมู่ ${v.moo}${vNameDisplay} ต.${v.subdistrict} <span class="text-xs text-slate-500 block">ผู้ป่วยตามเงื่อนไข: ${v.cases.length} ราย</span></h4>
-                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar">
+                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar pointer-events-auto">
                             ${casesListHtml}
                         </div>
                     </div>
