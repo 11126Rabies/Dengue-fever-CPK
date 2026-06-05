@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.6.8</title>
+    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.6.9</title>
     
     <!-- ฟอนต์และไอคอน -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,7 +53,19 @@
         .pin-green { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="%2322c55e" d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg>'); }
 
         /* Custom Hover Tooltip Map */
-        .custom-map-tooltip { background: rgba(255, 255, 255, 0.95); border: 1px solid #bae6fd; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border-radius: 8px; padding: 10px; }
+        .custom-map-tooltip { 
+            background: rgba(255, 255, 255, 0.95); 
+            border: 1px solid #bae6fd; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+            border-radius: 8px; 
+            padding: 10px; 
+            pointer-events: auto !important; 
+        }
+        /* Custom scrollbar for tooltips */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
 <body class="text-slate-800 pb-24 min-h-screen flex flex-col">
@@ -98,7 +110,7 @@
                     <span class="px-3 py-1 bg-sky-100 rounded-full">งานควบคุมโรค</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">กลุ่มงานบริการด้านปฐมภูมิและองค์รวม</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">โรงพยาบาลไชยปราการ</span>
-                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.6.8</span>
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.6.9</span>
                 </div>
             </div>
         </div>
@@ -501,7 +513,7 @@
     <script>
         // URL Google Apps Script 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFTdEr7cOkH0SsKwIFqKG8LUJ6wekDXuDtUSkDXTkRqSRI9c7WR1oS2Yc9A-NWio3HDQ/exec';
-        const storageKey = 'dengue_patients_data_v168'; 
+        const storageKey = 'dengue_patients_data_v169'; 
         
         let patients = JSON.parse(localStorage.getItem(storageKey)) || [];
         const SUBDISTRICTS = ['ปงตำ', 'แม่ทะลบ', 'ศรีดงเย็น', 'หนองบัว'];
@@ -938,25 +950,28 @@
                     const pMonth = p.onsetDate.split('-')[1]; // YYYY-MM
                     if(pMonth !== filterMonth) return;
                 }
-
-                // --- จุดปักสำหรับแต่ละบุคคลแยกกัน บนแผนที่ Heatmap ---
+                // --- อัปเดต: จุดปักสำหรับแต่ละบุคคลแยกกัน บนแผนที่ Heatmap ---
                 heatData.push([p.lat, p.lng, 1]); // ให้รัศมีความร้อน
                 
                 const heatDot = L.circleMarker([p.lat, p.lng], {
                     radius: 6, color: '#fff', weight: 1.5, fillColor: '#0ea5e9', fillOpacity: 0.9
                 });
-                const dotTooltipHtml = `
-                    <div class="font-sans text-left min-w-[150px]">
+                
+                // --- อัปเดต: เปลี่ยนจาก Tooltip เป็น Popup เพื่อให้เลื่อนเมาส์ไปคลิก/Scroll ได้ ---
+                const dotPopupHtml = `
+                    <div class="font-sans text-left min-w-[180px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">${p.fullName || 'ไม่ระบุชื่อ'}</h4>
                         <div class="text-xs text-slate-600 leading-relaxed">
                             <span class="text-red-500 font-bold">DX: ${p.dx || '-'}</span><br>
                             บ้านเลขที่: ${p.addressNo || '-'} หมู่: ${p.moo || '-'}<br>
                             ตำบล: ${p.subdistrict || '-'}<br>
-                            วันที่เริ่มป่วย: ${p.onsetDate || '-'}
+                            วันที่เริ่มป่วย: ${p.onsetDate || '-'}<br>
+                            วันที่พบผู้ป่วย: ${p.foundDate || '-'}
                         </div>
                     </div>
                 `;
-                heatDot.bindTooltip(dotTooltipHtml, { direction: 'top', className: 'custom-map-tooltip', opacity: 1 });
+                heatDot.bindPopup(dotPopupHtml, { closeButton: false });
+                heatDot.on('mouseover', function (e) { this.openPopup(); });
                 densityMarkersLayer.addLayer(heatDot);
 
                 // สำหรับ Pin Map (ตัวบน จัดกลุ่มตามหมู่บ้าน)
@@ -974,19 +989,26 @@
                 else if(st.level === 'yellow') pinClass = 'pin-yellow';
 
                 // หมุดสำหรับแผนที่พิกัด
-                const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="pin-marker ${pinClass}">${v.cases.length}</div>`, iconSize: [30, 40], iconAnchor: [15, 40] });
+                const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="pin-marker ${pinClass}">${v.cases.length}</div>`, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -35] });
                 const marker = L.marker([v.lat, v.lng], { icon: icon });
                 
-                let casesListHtml = v.cases.map(c => `• <b class="text-slate-800">${c.fullName}</b> <span class="text-xs text-red-500 font-bold ml-1">(${c.dx})</span> บ.เลขที่: ${c.addressNo || '-'}`).join('<br>');
-                const tooltipHtml = `
-                    <div class="font-sans text-left min-w-[200px]">
+                // --- อัปเดต: เปลี่ยนเป็น Popup เพื่อให้เลื่อนเมาส์เข้าไป Scroll ได้อย่างอิสระ ---
+                let casesListHtml = v.cases.map(c => `
+                    <div class="border-b border-slate-200 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
+                        • <b class="text-slate-800">${c.fullName}</b> <span class="text-xs text-red-500 font-bold ml-1">(${c.dx})</span><br>
+                        <span class="pl-2 text-slate-500">บ.เลขที่: ${c.addressNo || '-'} | พบผู้ป่วย: ${c.foundDate || '-'}</span>
+                    </div>`).join('');
+                    
+                const popupHtml = `
+                    <div class="font-sans text-left min-w-[220px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">หมู่ ${v.moo} ต.${v.subdistrict} <span class="text-xs text-slate-500 block">ผู้ป่วยตามเงื่อนไข: ${v.cases.length} ราย</span></h4>
-                        <div class="text-xs text-slate-600 max-h-40 overflow-y-auto leading-relaxed">
+                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar">
                             ${casesListHtml}
                         </div>
                     </div>
                 `;
-                marker.bindTooltip(tooltipHtml, { direction: 'top', className: 'custom-map-tooltip', opacity: 1, offset: [0, -35] });
+                marker.bindPopup(popupHtml, { closeButton: true });
+                marker.on('mouseover', function (e) { this.openPopup(); });
                 bigMapMarkersLayer.addLayer(marker);
             });
 
@@ -1010,7 +1032,7 @@
             renderSituationMap();
 
             setTimeout(() => {
-                bigMapInst.flyTo([lat, lng], 17, { duration: 1.5 });
+                bigMapInst.setView([lat, lng], 17);
                 if(activeSearchMarker) bigMapInst.removeLayer(activeSearchMarker);
 
                 const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="pin-marker pin-red"><i class="fa-solid fa-user"></i></div>`, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -35] });
