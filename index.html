@@ -956,18 +956,23 @@
                 });
                 
                 const vNameStr = p.villageName ? ` บ.${p.villageName}` : '';
-                const dotTooltipHtml = `
+                // อัปเดต: เพิ่มวันที่พบผู้ป่วย และใช้เป็น Popup
+                const dotPopupHtml = `
                     <div class="font-sans text-left min-w-[180px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">${p.fullName || 'ไม่ระบุชื่อ'}</h4>
                         <div class="text-xs text-slate-600 leading-relaxed">
                             <span class="text-red-500 font-bold">DX: ${p.dx || '-'}</span><br>
                             บ.เลขที่: ${p.addressNo || '-'} หมู่: ${p.moo || '-'}${vNameStr}<br>
                             ตำบล: ${p.subdistrict || '-'}<br>
-                            วันที่เริ่มป่วย: ${p.onsetDate || '-'}
+                            วันที่เริ่มป่วย: ${p.onsetDate || '-'}<br>
+                            วันที่พบผู้ป่วย: ${p.foundDate || '-'}
                         </div>
                     </div>
                 `;
-                heatDot.bindTooltip(dotTooltipHtml, { direction: 'top', className: 'custom-map-tooltip', opacity: 1 });
+                
+                // ใช้ bindPopup คู่กับ mouseover เพื่อให้กล่องค้างไว้จนกว่าจะไปชี้หมุดอื่น
+                heatDot.bindPopup(dotPopupHtml, { closeButton: true, autoPan: false });
+                heatDot.on('mouseover', function (e) { this.openPopup(); });
                 densityMarkersLayer.addLayer(heatDot);
 
                 // สำหรับ Pin Map (จัดกลุ่มหมู่บ้าน)
@@ -994,15 +999,18 @@
                     </div>`).join('');
                     
                 const vNameDisplay = v.villageName ? ` บ.${v.villageName}` : '';
-                const tooltipHtml = `
+                
+                // อัปเดต: เปลี่ยนเป็นระบบ Popup เพื่อให้เอาเมาส์เข้าไปเลื่อนดูเคสได้อิสระ
+                const popupHtml = `
                     <div class="font-sans text-left min-w-[220px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">หมู่ ${v.moo}${vNameDisplay} ต.${v.subdistrict} <span class="text-xs text-slate-500 block">ผู้ป่วยตามเงื่อนไข: ${v.cases.length} ราย</span></h4>
-                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar" style="pointer-events: auto;">
+                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar">
                             ${casesListHtml}
                         </div>
                     </div>
                 `;
-                marker.bindTooltip(tooltipHtml, { direction: 'top', className: 'custom-map-tooltip', opacity: 1, offset: [0, -35], interactive: true });
+                marker.bindPopup(popupHtml, { closeButton: true, offset: [0, -35], autoPan: false });
+                marker.on('mouseover', function (e) { this.openPopup(); });
                 bigMapMarkersLayer.addLayer(marker);
             });
 
