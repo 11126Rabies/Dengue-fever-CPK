@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.7.2</title>
+    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.7.3</title>
     
     <!-- ฟอนต์และไอคอน -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,7 +115,7 @@
                     <span class="px-3 py-1 bg-sky-100 rounded-full">งานควบคุมโรค</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">กลุ่มงานบริการด้านปฐมภูมิและองค์รวม</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">โรงพยาบาลไชยปราการ</span>
-                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.7.2</span>
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.7.3</span>
                 </div>
             </div>
         </div>
@@ -338,7 +338,7 @@
                                 <li class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-orange-500 shadow-sm"></div> <span><b>พบใหม่:</b> 1-2 สัปดาห์ล่าสุด</span></li>
                                 <li class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-yellow-500 shadow-sm"></div> <span><b>เฝ้าระวัง:</b> 15 - 28 วันที่ผ่านมา</span></li>
                                 <li class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500 shadow-sm"></div> <span><b>สงบ:</b> เกิน 28 วัน / ไม่มีป่วย</span></li>
-                                <li class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-200"><div class="w-4 h-4 rounded-full border-2 border-red-500 border-dashed bg-red-100 opacity-50"></div> <span><b>รัศมีควบคุมโรค:</b> 100 เมตร</span></li>
+                                <li class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-200"><div class="w-4 h-4 rounded-full border-[3px] border-red-500 border-dashed bg-red-500 opacity-40"></div> <span><b>รัศมีควบคุมโรค:</b> 100 เมตร</span></li>
                             </ul>
                         </div>
                     </div>
@@ -960,7 +960,7 @@
                 
                 // --- เพิ่มวงกลมควบคุมโรค 100 เมตร (สำหรับแผนที่ล่าง) ---
                 const individualZone = L.circle([p.lat, p.lng], {
-                    radius: 100, color: 'red', weight: 1.5, dashArray: '4, 8', fillOpacity: 0.05, fillColor: '#fca5a5'
+                    radius: 100, color: '#ef4444', weight: 3, dashArray: '6, 6', fillOpacity: 0.25, fillColor: '#ef4444'
                 });
                 densityMarkersLayer.addLayer(individualZone);
 
@@ -1005,7 +1005,7 @@
 
                 // --- เพิ่มวงกลมควบคุมโรค 100 เมตร (สำหรับแผนที่บน) ---
                 const villageZone = L.circle([v.lat, v.lng], {
-                    radius: 100, color: 'red', weight: 2, dashArray: '5, 5', fillOpacity: 0.1, fillColor: 'red'
+                    radius: 100, color: '#ef4444', weight: 3, dashArray: '6, 6', fillOpacity: 0.25, fillColor: '#ef4444'
                 });
                 bigMapMarkersLayer.addLayer(villageZone);
 
@@ -1059,7 +1059,7 @@
                 if(activeSearchCircle) bigMapInst.removeLayer(activeSearchCircle);
 
                 activeSearchCircle = L.circle([lat, lng], {
-                    radius: 100, color: 'red', weight: 2, dashArray: '5, 5', fillOpacity: 0.1, fillColor: 'red'
+                    radius: 100, color: '#ef4444', weight: 3, dashArray: '6, 6', fillOpacity: 0.25, fillColor: '#ef4444'
                 }).addTo(bigMapInst);
 
                 const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="pin-marker pin-red"><i class="fa-solid fa-user"></i></div>`, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -35] });
