@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.7.3</title>
+    <title>ระบบบันทึกข้อมูลผู้ป่วยไข้เลือดออก อ.ไชยปราการ V1.7.5</title>
     
     <!-- ฟอนต์และไอคอน -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,7 +115,7 @@
                     <span class="px-3 py-1 bg-sky-100 rounded-full">งานควบคุมโรค</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">กลุ่มงานบริการด้านปฐมภูมิและองค์รวม</span>
                     <span class="px-3 py-1 bg-sky-100 rounded-full">โรงพยาบาลไชยปราการ</span>
-                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.7.3</span>
+                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full shadow-sm"><i class="fa-solid fa-code-commit mr-1"></i>V1.7.5</span>
                 </div>
             </div>
         </div>
@@ -521,7 +521,7 @@
     <script>
         // URL Google Apps Script 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFTdEr7cOkH0SsKwIFqKG8LUJ6wekDXuDtUSkDXTkRqSRI9c7WR1oS2Yc9A-NWio3HDQ/exec';
-        const storageKey = 'dengue_patients_data_v172'; 
+        const storageKey = 'dengue_patients_data_v175'; 
         
         let patients = JSON.parse(localStorage.getItem(storageKey)) || [];
         const SUBDISTRICTS = ['ปงตำ', 'แม่ทะลบ', 'ศรีดงเย็น', 'หนองบัว'];
@@ -577,26 +577,31 @@
             }
         }
 
-        // --- ระบบดึงข้อมูลจาก Google Sheets (Pull) ---
+        // --- ระบบดึงข้อมูลจาก Google Sheets (Pull) พร้อมแก้ไขปัญหา JSON ---
         async function loadDataFromSheets() {
             document.getElementById('loading-overlay').classList.remove('hidden');
             try {
                 const response = await fetch(SCRIPT_URL);
-                const json = await response.json();
-                if(json.status === 'success' && json.data) {
-                    patients = json.data.map(p => ({
-                        id: parseInt(p.id) || 0, fullName: p.fullName || '', hn: p.hn || '',
-                        age: parseInt(p.age) || 0, gender: getCleanGender(p.gender), addressNo: p.addressNo || '',
-                        moo: p.moo || '', villageName: p.villageName || '', subdistrict: p.subdistrict || 'ปงตำ', serviceUnit: p.serviceUnit || 'รพ.ไชยปราการ',
-                        lat: parseFloat(p.lat) || '', lng: parseFloat(p.lng) || '',
-                        onsetDate: p.onsetDate ? p.onsetDate.split('T')[0] : '', 
-                        foundDate: p.foundDate ? p.foundDate.split('T')[0] : '', 
-                        dx: getCleanDX(p.dx), workplace: p.workplace || '', workplaceMoo: p.workplaceMoo || ''
-                    })).filter(p => p.id > 0);
-                    localStorage.setItem(storageKey, JSON.stringify(patients));
+                const text = await response.text(); // อ่านแบบข้อความเพื่อป้องกันแครช
+                try {
+                    const json = JSON.parse(text); // แปลงเป็น JSON
+                    if(json.status === 'success' && json.data) {
+                        patients = json.data.map(p => ({
+                            id: parseInt(p.id) || 0, fullName: p.fullName || '', hn: p.hn || '',
+                            age: parseInt(p.age) || 0, gender: getCleanGender(p.gender), addressNo: p.addressNo || '',
+                            moo: p.moo || '', villageName: p.villageName || '', subdistrict: p.subdistrict || 'ปงตำ', serviceUnit: p.serviceUnit || 'รพ.ไชยปราการ',
+                            lat: parseFloat(p.lat) || '', lng: parseFloat(p.lng) || '',
+                            onsetDate: p.onsetDate ? p.onsetDate.split('T')[0] : '', 
+                            foundDate: p.foundDate ? p.foundDate.split('T')[0] : '', 
+                            dx: getCleanDX(p.dx), workplace: p.workplace || '', workplaceMoo: p.workplaceMoo || ''
+                        })).filter(p => p.id > 0);
+                        localStorage.setItem(storageKey, JSON.stringify(patients));
+                    }
+                } catch (e) {
+                    console.error("การตอบกลับไม่ใช่ JSON: ตรวจสอบการตั้งค่าสิทธิ์ Anyone ของ Google Apps Script หรือดึงข้อมูลเก่าในเครื่องมาใช้", e);
                 }
             } catch (error) {
-                console.error("Fetch Data Error: ใช้ข้อมูลล่าสุดที่มีในเครื่องแทน", error);
+                console.error("Fetch Data Error:", error);
             }
             document.getElementById('loading-overlay').classList.add('hidden');
             updateYearDropdowns(); renderDashboard(); renderVillageStats(); renderTable();
@@ -692,7 +697,7 @@
 
             const areaCounts = {};
             filteredPatients.forEach(p => { if(p.subdistrict) areaCounts[p.subdistrict] = (areaCounts[p.subdistrict] || 0) + 1; });
-            const sortedAreas = Object.entries(areaCounts).sort((a,b) => b[1] - a[1]); // แสดงทั้งหมด
+            const sortedAreas = Object.entries(areaCounts).sort((a,b) => b[1] - a[1]); 
             let areaHtml = '';
             sortedAreas.forEach((area, index) => {
                 areaHtml += `<div class="flex justify-between border-b border-white/20 pb-1 last:border-0 last:pb-0"><span>${index+1}. ต.${area[0]}</span> <span>${area[1]} ราย</span></div>`;
@@ -914,7 +919,6 @@
         }
 
         function renderSituationMap() {
-            // สร้างแผนที่แบบมี Base Layer ให้เลือก (ถนน / ดาวเทียม)
             if (!bigMapInst) {
                 bigMapInst = L.map('bigSituationMap').setView([19.735, 99.135], 11);
                 var osm1 = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(bigMapInst);
@@ -955,10 +959,10 @@
                     if(pMonth !== filterMonth) return;
                 }
 
-                // --- จุดปักสำหรับแต่ละบุคคลแยกกัน บนแผนที่ Heatmap ---
-                heatData.push([p.lat, p.lng, 1]); // ให้รัศมีความร้อน
+                // สำหรับ Heatmap แยกรายบุคคล
+                heatData.push([p.lat, p.lng, 1]); 
                 
-                // --- เพิ่มวงกลมควบคุมโรค 100 เมตร (สำหรับแผนที่ล่าง) ---
+                // เพิ่มวงกลมควบคุมโรค 100 เมตร
                 const individualZone = L.circle([p.lat, p.lng], {
                     radius: 100, color: '#ef4444', weight: 3, dashArray: '6, 6', fillOpacity: 0.25, fillColor: '#ef4444'
                 });
@@ -980,7 +984,7 @@
                             วันที่เริ่มป่วย: ${p.onsetDate || '-'}<br>
                             วันที่พบผู้ป่วย: ${p.foundDate || '-'}
                         </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}" target="_blank" class="block w-full text-center bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}" target="_blank" class="block w-full text-center bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-1.5 rounded-lg text-xs font-bold transition-colors" style="text-decoration:none;">
                             <i class="fa-solid fa-map-location-dot"></i> ดูพิกัดใน Google Maps
                         </a>
                     </div>
@@ -1003,7 +1007,7 @@
                 if(st.level === 'red_or_orange') pinClass = v.cases.length > 2 ? 'pin-red' : 'pin-orange';
                 else if(st.level === 'yellow') pinClass = 'pin-yellow';
 
-                // --- เพิ่มวงกลมควบคุมโรค 100 เมตร (สำหรับแผนที่บน) ---
+                // เพิ่มวงกลมควบคุมโรค 100 เมตร
                 const villageZone = L.circle([v.lat, v.lng], {
                     radius: 100, color: '#ef4444', weight: 3, dashArray: '6, 6', fillOpacity: 0.25, fillColor: '#ef4444'
                 });
@@ -1012,23 +1016,29 @@
                 const icon = L.divIcon({ className: 'custom-div-icon', html: `<div class="pin-marker ${pinClass}">${v.cases.length}</div>`, iconSize: [30, 40], iconAnchor: [15, 40] });
                 const marker = L.marker([v.lat, v.lng], { icon: icon });
                 
+                // --- อัปเดต: เพิ่มปุ่ม Maps แยกรายคน ใน Popup ของแผนที่บน ---
                 let casesListHtml = v.cases.map(c => `
                     <div class="border-b border-slate-200 pb-2 mb-2 last:border-0 last:pb-0 last:mb-0">
-                        • <b class="text-slate-800">${c.fullName}</b> <span class="text-xs text-red-500 font-bold ml-1">(${c.dx})</span><br>
-                        <span class="pl-2 text-slate-500">บ.เลขที่: ${c.addressNo || '-'} | พบผู้ป่วย: ${c.foundDate || '-'}</span>
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                • <b class="text-slate-800">${c.fullName}</b> <span class="text-xs text-red-500 font-bold ml-1">(${c.dx})</span><br>
+                                <span class="pl-2 text-slate-500">บ.เลขที่: ${c.addressNo || '-'} | พบผู้ป่วย: ${c.foundDate || '-'}</span>
+                            </div>
+                            ${c.lat && c.lng ? `
+                            <a href="https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}" target="_blank" class="shrink-0 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 px-2 py-1.5 rounded text-[10px] font-bold transition-colors flex items-center shadow-sm" style="text-decoration:none;">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i> Maps
+                            </a>` : ''}
+                        </div>
                     </div>`).join('');
                     
                 const vNameDisplay = v.villageName ? ` บ.${v.villageName}` : '';
                 
                 const popupHtml = `
-                    <div class="font-sans text-left min-w-[220px]">
+                    <div class="font-sans text-left min-w-[280px]">
                         <h4 class="font-bold text-sky-700 border-b pb-1 mb-2">หมู่ ${v.moo}${vNameDisplay} ต.${v.subdistrict} <span class="text-xs text-slate-500 block">ผู้ป่วยตามเงื่อนไข: ${v.cases.length} ราย</span></h4>
-                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar pointer-events-auto mb-2">
+                        <div class="text-xs text-slate-600 max-h-[160px] overflow-y-auto leading-relaxed pr-2 custom-scrollbar pointer-events-auto mb-1">
                             ${casesListHtml}
                         </div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lng}" target="_blank" class="block w-full text-center bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-1.5 rounded-lg text-xs font-bold transition-colors mt-2">
-                            <i class="fa-solid fa-map-location-dot"></i> ดูพิกัดใน Google Maps
-                        </a>
                     </div>
                 `;
                 marker.bindPopup(popupHtml, { closeButton: true, offset: [0, -35], autoPan: false });
@@ -1071,7 +1081,7 @@
                         <b class="text-sky-700 text-lg">${name}</b><br>
                         <span class="text-sm">บ้านเลขที่: ${addressNo || '-'}, หมู่ ${moo || '-'}${vNameStr} ต.${subdistrict || '-'}</span><br>
                         <span class="text-xs text-slate-500 block mb-2">(พิกัดศูนย์กลางรัศมีควบคุมโรค 100 ม.)</span>
-                        <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="inline-block w-full text-center bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                        <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="inline-block w-full text-center bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 py-1.5 rounded-lg text-xs font-bold transition-colors" style="text-decoration:none;">
                             <i class="fa-solid fa-map-location-dot"></i> ดูใน Google Maps
                         </a>
                     </div>
